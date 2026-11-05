@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Conexión con TikTok · ClipForja</title>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #1b1b1f; background: #fbfaf8; line-height: 1.6; }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
+    .box { background: #fff; border: 1px solid #e4e2dd; border-radius: 12px; padding: 20px; margin: 20px 0; word-break: break-all; font-family: ui-monospace, Consolas, monospace; }
+    button { background: #ff6a1a; color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; font-size: 16px; cursor: pointer; }
+    .error { color: #b3261e; }
+    .muted { color: #5d5d66; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Conexión con TikTok</h1>
+    <div id="out">Leyendo la respuesta de TikTok…</div>
+    <p class="muted">Esta página no envía datos a ningún servidor: solo muestra el código que TikTok puso en la dirección para que lo copies.</p>
+  </main>
+  <script>
+    // TikTok redirige aquí con ?code=...&state=... (o ?error=...)
+    const params = new URLSearchParams(window.location.search);
+    const out = document.getElementById('out');
+    const code = params.get('code');
+    const error = params.get('error');
+    const state = params.get('state') || '';
+
+    if (error) {
+      out.innerHTML = '<p class="error">TikTok devolvió un error: <strong></strong></p><p></p>';
+      out.querySelector('strong').textContent = error;
+      out.querySelectorAll('p')[1].textContent = params.get('error_description') || '';
+    } else if (code) {
+      const command = `/tiktok ${code} ${state}`.trim();
+      out.innerHTML = '<p>Autorizaste ClipForja. Copia este comando y envíaselo a tu bot de Telegram antes de 5 minutos:</p>' +
+        '<div class="box" id="cmd"></div><button id="copy">Copiar</button> <span id="ok" class="muted"></span>';
+      document.getElementById('cmd').textContent = command;
+      document.getElementById('copy').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(command);
+          document.getElementById('ok').textContent = 'Copiado';
+        } catch {
+          document.getElementById('ok').textContent = 'Selecciona el texto y cópialo a mano';
+        }
+      });
+    } else {
+      out.innerHTML = '<p>No hay ningún código en la dirección. Inicia la conexión desde el bot con <code>/conectar_tiktok</code>.</p>';
+    }
+  </script>
+</body>
+</html>
